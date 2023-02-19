@@ -7,6 +7,12 @@
 
 import UIKit
 
+/// Кастомный delegate протокол, который позволит тем, кто от него отнаследуется получать доступ к данным этого класса
+protocol EmployeeTypeTableViewControllerDelegate {
+    // Объявляем функцию протокола которая в качестве аргумента берет текущий VC и тип работника, которого (если) выбрал пользователь
+    func employeeTypeTableViewController(_ controller: EmployeeTypeTableViewController, didSelect employeeType: EmployeeType)
+}
+
 class EmployeeTypeTableViewController: UITableViewController {
 
     override func viewDidLoad() {
@@ -23,6 +29,8 @@ class EmployeeTypeTableViewController: UITableViewController {
     
     /// Property for tracking of whether an employeetype has been chosen
     var employeeType: EmployeeType?
+    /// Delegate проперти
+    var delegate: EmployeeTypeTableViewControllerDelegate?
 
     // MARK: - Table view data source
 
@@ -80,7 +88,9 @@ class EmployeeTypeTableViewController: UITableViewController {
         // Сначала убирается хэндлер выделения клетки таблицы
         tableView.deselectRow(at: indexPath, animated: true)
         // Определяется `EmployeeType` клетки и присваивается проперти `self.employeeType`
-        self.employeeType = EmployeeType.allCases[indexPath.row]
+        let selectedEmployeeType = EmployeeType.allCases[indexPath.row]
+        self.employeeType = selectedEmployeeType
+        delegate?.employeeTypeTableViewController(self, didSelect: selectedEmployeeType)
         // Перезагрузка данных таблицы для того, чтобы выделение вступило в силу
         tableView.reloadData()
     }
