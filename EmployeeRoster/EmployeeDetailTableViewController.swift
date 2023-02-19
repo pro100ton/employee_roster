@@ -5,7 +5,17 @@ protocol EmployeeDetailTableViewControllerDelegate: AnyObject {
     func employeeDetailTableViewController(_ controller: EmployeeDetailTableViewController, didSave employee: Employee)
 }
 
-class EmployeeDetailTableViewController: UITableViewController, UITextFieldDelegate {
+class EmployeeDetailTableViewController: UITableViewController, UITextFieldDelegate, EmployeeTypeTableViewControllerDelegate {
+    func employeeTypeTableViewController(_ controller: EmployeeTypeTableViewController, didSelect employeeType: EmployeeType) {
+        /// В имплементации метода делагата (который будет вызываться при выборе пользователем нужного типа в didSelectRow) происходит следующее:
+        // 1 - Получателю сообщения (т.е. этому классу) приходит выбранный пользователем тип работника
+        self.employeeType = employeeType
+        // 2 - Обновляется данные в таблице деталей создаваемого пользователя
+        employeeTypeLabel.text = self.employeeType?.description
+        // 3 - Декоративные доработки
+        employeeTypeLabel.textColor = .white
+    }
+    
     
     // MARK: Variables
     // Property to store index path position of birthday label
@@ -22,6 +32,9 @@ class EmployeeDetailTableViewController: UITableViewController, UITextFieldDeleg
             tableView.endUpdates()
         }
     }
+    
+    /// Property for storing Employee
+    var employeeType: EmployeeType?
     
     // MARK: Outlets
     
@@ -59,7 +72,8 @@ class EmployeeDetailTableViewController: UITableViewController, UITextFieldDeleg
     }
     
     private func updateSaveButtonState() {
-        let shouldEnableSaveButton = nameTextField.text?.isEmpty == false
+        // Кнопка будет активна если написано имя и выбран тип работника
+        let shouldEnableSaveButton = nameTextField.text?.isEmpty == false && employeeType != nil
         saveBarButtonItem.isEnabled = shouldEnableSaveButton
     }
     
@@ -78,7 +92,12 @@ class EmployeeDetailTableViewController: UITableViewController, UITextFieldDeleg
             return
         }
         
-        let employee = Employee(name: name, dateOfBirth: dobDatePicker.date, employeeType: .exempt)
+        /// Unwrapp'им тип работника. В случае если его нет, то saveButton не вернет ничего
+        guard let employeeType = employeeType else {
+            return
+        }
+        
+        let employee = Employee(name: name, dateOfBirth: dobDatePicker.date, employeeType: employeeType)
         delegate?.employeeDetailTableViewController(self, didSave: employee)
     }
     
@@ -141,5 +160,18 @@ class EmployeeDetailTableViewController: UITableViewController, UITextFieldDeleg
         default:
             return UITableView.automaticDimension
         }
+    }
+    
+    // MARK: Segues
+    
+    @IBSegueAction func showEmployeeTypes(_ coder: NSCoder) -> EmployeeTypeTableViewController? {
+        // Объявляем экземпляр VC выбора типа работника
+        let employeeTypeSelectorViewController = EmployeeTypeTableViewController(coder: coder)
+        // Говорим объекту, что получателем сообщений от вызова функций протокола в нем будет данный VC
+        employeeTypeSelectorViewController?.delegate = self
+        // Присваиваем значение типа комнаты, если оно выбрано, экземпляру VC выбора типа работника, чтобы он корректно инициализировался с учетом наших данных
+        employeeTypeSelectorViewController?.employeeType = self.employeeType
+        // Возвращаем сконфигурированный VC выбора типа работника
+        return employeeTypeSelectorViewController
     }
 }

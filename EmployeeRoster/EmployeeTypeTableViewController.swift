@@ -29,7 +29,7 @@ class EmployeeTypeTableViewController: UITableViewController {
     
     /// Property for tracking of whether an employeetype has been chosen
     var employeeType: EmployeeType?
-    /// Delegate проперти
+    /// Delegate проперти (тот кто наследует протокол a.k.a приемник сообщений из протокола (в нашем примере - VC добавления/редактирования пользователя)
     var delegate: EmployeeTypeTableViewControllerDelegate?
 
     // MARK: - Table view data source
@@ -90,6 +90,9 @@ class EmployeeTypeTableViewController: UITableViewController {
         // Определяется `EmployeeType` клетки и присваивается проперти `self.employeeType`
         let selectedEmployeeType = EmployeeType.allCases[indexPath.row]
         self.employeeType = selectedEmployeeType
+        // Вызов функции делегата a.k.a передача аргументов функии протокола приемнику сообщений (в нашем примере - VC регистрации/редактирования работника)
+        // Получится что выбранный тип работника будет "виден" делегату, который имплементирует эту функцию этого протоколоа и сможет делать с ней все что угодно в своей реализации этого метода
+        // Другими словами мы вызываем здесь функцию протокола, в аргументах которой есть выбранный пользователь, а что с ним делать решит уже тот, кто унаследует этот протокол и реализует его функцию
         delegate?.employeeTypeTableViewController(self, didSelect: selectedEmployeeType)
         // Перезагрузка данных таблицы для того, чтобы выделение вступило в силу
         tableView.reloadData()
